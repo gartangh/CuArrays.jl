@@ -28,7 +28,7 @@ end
 
 Base.cconvert(::Type{cudnnConvolutionMode_t}, x::Bool) = x ? CUDNN_CROSS_CORRELATION : CUDNN_CONVOLUTION
 
-function ConvDesc(T, N, padding, stride, dilation, mode)
+function ConvDesc(T, N, padding, stride, dilation, mode, groupcount)
     cd = Ref{cudnnConvolutionDescriptor_t}()
     cudnnCreateConvolutionDescriptor(cd)
     if version() >= v"4"
@@ -38,6 +38,7 @@ function ConvDesc(T, N, padding, stride, dilation, mode)
     else
         cudnnSetConvolutionNdDescriptor(cd[],N,cdsize(padding,N),cdsize(stride,N),cdsize(dilation,N),mode)
     end
+    cudnnSetConvolutionGroupCount(cd[], Cint(groupcount))
     this = ConvDesc(cd[])
     finalizer(unsafe_free!, this)
     return this
@@ -49,7 +50,7 @@ function ConvDesc(T, cdims::DenseConvDims)
         @warn("CuDNN does not support asymmetric padding; defaulting to symmetric choice")
     end
     return ConvDesc(T, NNlib.spatial_dims(cdims), pd[1:2:end], NNlib.stride(cdims),
-                       NNlib.dilation(cdims), NNlib.flipkernel(cdims))
+                       NNlib.dilation(cdims), NNlib.flipkernel(cdims), NNlib.group_count(cdims))
 end
 
 
