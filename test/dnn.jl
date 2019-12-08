@@ -17,7 +17,7 @@ else
                softmax, ∇softmax, logsoftmax, ∇logsoftmax
   a, b, c = rand(Float64, 10, 10, 3, 1), rand(Float64, 2, 2, 3, 4), rand(Float64, 9, 9, 4, 1)
   da, db, dc = CuArray(a), CuArray(b), CuArray(c)
-  cdims = DenseConvDims(a, b)
+  cdims = ConvDims(a, b)
   @test NNlib.conv(a, b, cdims) ≈ collect(NNlib.conv(da, db, cdims))
   @test ∇conv_data(c, b, cdims) ≈ collect(∇conv_data(dc, db, cdims))
   @test ∇conv_filter(a, c, cdims) ≈ collect(∇conv_filter(da, dc, cdims))
@@ -35,7 +35,7 @@ else
     algos = (1, 0, 1, 1,)
 
     for (opts, algo) in zip(options, algos)
-      cdims = DenseConvDims(x, w; opts...)
+      cdims = ConvDims(x, w; opts...)
       y = NNlib.conv(x, w, cdims)
 
       # Test that basic convolution is equivalent across GPU/CPU

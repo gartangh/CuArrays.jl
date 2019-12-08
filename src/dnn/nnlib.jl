@@ -47,13 +47,13 @@ fix1d(x) = x
 
 fix1d(x::CuArray{T, 3}) where T = reshape(x, size(x, 1), 1, size(x, 2), size(x, 3))
 
-fix1d(cdims::DenseConvDims{1,K,C_in,C_out,S,P,D,F}) where {K,C_in,C_out,S,P,D,F} = 
-  DenseConvDims{2,(K...,1),C_in,C_out,(S...,1),(P...,0,0),(D...,1),F}((cdims.I...,1))
+fix1d(cdims::ConvDims{1,K,C_in,C_out,S,P,D,F,G}) where {K,C_in,C_out,S,P,D,F} =
+  ConvDims{2,(K...,1),C_in,C_out,(S...,1),(P...,0,0),(D...,1),F,G}((cdims.I...,1))
 
-fix1d(pdims::PoolDims{1,K,S,P,D}) where {K,S,P,D,F} = 
+fix1d(pdims::PoolDims{1,K,S,P,D}) where {K,S,P,D,F} =
   PoolDims{2,(K...,1),(S...,1),(P...,0,0),(D...,1)}((pdims.I..., 1), pdims.C_in)
 
-function conv!(y::CuArray{T}, x::CuArray{T}, w::CuArray{T}, cdims::DenseConvDims;
+function conv!(y::CuArray{T}, x::CuArray{T}, w::CuArray{T}, cdims::ConvDims;
                alpha=1, algo=0) where T<:CUDNNFloat
   if version() < v"6"
     all(x -> x == 1, dilation(cdims)) || error("Only dilation = 1 is supported in cuDNN version < 6")
@@ -63,7 +63,7 @@ function conv!(y::CuArray{T}, x::CuArray{T}, w::CuArray{T}, cdims::DenseConvDims
 end
 
 function ∇conv_filter!(dw::CuArray{T}, x::CuArray{T}, dy::CuArray{T},
-                       cdims::DenseConvDims; alpha=1, algo=0) where T<:CUDNNFloat
+                       cdims::ConvDims; alpha=1, algo=0) where T<:CUDNNFloat
   if version() < v"6"
     all(x -> x == 1, dilation(cdims)) || error("Only dilation = 1 is supported in cuDNN version < 6")
   end
@@ -73,7 +73,7 @@ function ∇conv_filter!(dw::CuArray{T}, x::CuArray{T}, dy::CuArray{T},
 end
 
 function ∇conv_data!(dx::CuArray{T}, dy::CuArray{T}, w::CuArray{T},
-                     cdims::DenseConvDims; alpha=1, algo=0) where T<:CUDNNFloat
+                     cdims::ConvDims; alpha=1, algo=0) where T<:CUDNNFloat
   if version() < v"6"
     all(x -> x == 1, dilation(cdims)) || error("Only dilation = 1 is supported in cuDNN version < 6")
   end

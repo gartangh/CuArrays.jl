@@ -1,4 +1,4 @@
-using NNlib: DenseConvDims
+using NNlib: ConvDims
 
 
 # descriptor
@@ -44,7 +44,7 @@ function ConvDesc(T, N, padding, stride, dilation, mode, groupcount)
     return this
 end
 
-function ConvDesc(T, cdims::DenseConvDims)
+function ConvDesc(T, cdims::ConvDims)
     pd = NNlib.padding(cdims)
     if !all(pd[1:2:end] .== pd[2:2:end])
         @warn("CuDNN does not support asymmetric padding; defaulting to symmetric choice")
@@ -69,7 +69,7 @@ function cudnnConvolutionBiasActivationForward(y::CuArray{T,N}, x::CuArray{T,N},
 end
 
 function cudnnConvolutionForward(y::CuArray{T,N}, x::CuArray{T,N}, w::CuArray{T,N},
-                                 cdims::DenseConvDims; algo=0, alpha=1, beta=0) where {T,N}
+                                 cdims::ConvDims; algo=0, alpha=1, beta=0) where {T,N}
     @workspace size=@argout(
             cudnnGetConvolutionForwardWorkspaceSize(
                 handle(), TensorDesc(x),
@@ -87,7 +87,7 @@ function cudnnConvolutionForward(y::CuArray{T,N}, x::CuArray{T,N}, w::CuArray{T,
 end
 
 function cudnnConvolutionBackwardData(dx::CuArray{T,N}, w::CuArray{T,N}, dy::CuArray{T,N},
-                                      cdims::DenseConvDims; algo=0, alpha=1, beta=0) where {T,N}
+                                      cdims::ConvDims; algo=0, alpha=1, beta=0) where {T,N}
     @workspace size=@argout(
             cudnnGetConvolutionBackwardDataWorkspaceSize(
                 handle(), FilterDesc(w),
@@ -106,7 +106,7 @@ function cudnnConvolutionBackwardData(dx::CuArray{T,N}, w::CuArray{T,N}, dy::CuA
 end
 
 function cudnnConvolutionBackwardFilter(dw::CuArray{T,N}, x::CuArray{T,N}, dy::CuArray{T,N},
-                                        cdims::DenseConvDims; algo=0, alpha=1, beta=0) where {T,N}
+                                        cdims::ConvDims; algo=0, alpha=1, beta=0) where {T,N}
     @workspace size=@argout(
             cudnnGetConvolutionBackwardFilterWorkspaceSize(
                 handle(), TensorDesc(x),
