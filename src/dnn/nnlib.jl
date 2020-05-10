@@ -47,7 +47,7 @@ fix1d(x) = x
 
 fix1d(x::CuArray{T, 3}) where T = reshape(x, size(x, 1), 1, size(x, 2), size(x, 3))
 
-fix1d(cdims::ConvDims{1,K,C_in,C_out,S,P,D,F,G}) where {K,C_in,C_out,S,P,D,F} =
+fix1d(cdims::ConvDims{1,K,C_in,C_out,S,P,D,F,G}) where {K,C_in,C_out,S,P,D,F,G} =
   ConvDims{2,(K...,1),C_in,C_out,(S...,1),(P...,0,0),(D...,1),F,G}((cdims.I...,1))
 
 fix1d(pdims::PoolDims{1,K,S,P,D}) where {K,S,P,D,F} =
