@@ -55,6 +55,20 @@ end
 
 # wrappers
 
+function cudnnGetConvolutionForwardAlgorithm(y::CuArray{T,N}, x::CuArray{T,N}, w::CuArray{T,N},
+                                             cdims::DenseConvDims; preference=1, memoryLimitInBytes=0) where {T,N}
+    algo=@argout(
+        cudnnGetConvolutionForwardAlgorithm(
+            handle(), TensorDesc(x),
+            FilterDesc(w), ConvDesc(T, cdims),
+            TensorDesc(y),
+            cudnnConvolutionFwdPreference_t(preference),
+            Csize_t(memoryLimitInBytes),
+            out(Ref{cudnnConvolutionFwdAlgo_t}()))
+        )[]
+    return algo
+end
+
 function cudnnConvolutionForward(y::CuArray{T,N}, x::CuArray{T,N}, w::CuArray{T,N},
                                  cdims::DenseConvDims; algo=0, alpha=1, beta=0) where {T,N}
     @workspace size=@argout(

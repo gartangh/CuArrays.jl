@@ -54,9 +54,12 @@ fix1d(pdims::PoolDims{1,K,S,P,D}) where {K,S,P,D,F} =
   PoolDims{2,(K...,1),(S...,1),(P...,0,0),(D...,1)}((pdims.I..., 1), pdims.C_in)
 
 function conv!(y::CuArray{T}, x::CuArray{T}, w::CuArray{T}, cdims::DenseConvDims;
-               alpha=1, algo=0) where T<:CUDNNFloat
+               alpha=1, algo=-1) where T<:CUDNNFloat
   if version() < v"6"
     all(x -> x == 1, dilation(cdims)) || error("Only dilation = 1 is supported in cuDNN version < 6")
+  end
+  if algo == -1
+    algo = UInt32(cudnnGetConvolutionForwardAlgorithm(fix1d(y), fix1d(x), fix1d(w), fix1d(cdims)))
   end
   cudnnConvolutionForward(fix1d(y), fix1d(x), fix1d(w), fix1d(cdims), alpha=alpha, algo=algo)
   return y
